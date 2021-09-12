@@ -12,6 +12,9 @@
     "jest": "^24.9.0"
   },
   "dependencies": {
-    "inquirer": "^8.1.2"
+    "console.table": "^0.10.0",
+    "dotenv": "^10.0.0",
+    "inquirer": "^8.1.2",
+    "mysql2": "^2.3.0"
   }
 }
