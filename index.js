@@ -245,7 +245,6 @@ const addDeptOption = () => {
 
       console.log(newDept)
       addDept(newDept.getDeptName())
-      buildMainMenu()
     });
 };
 
@@ -274,7 +273,7 @@ const addRoleOption = () => {
 
       addRole(newRole.getRoleName(), newRole.getSalary(), newRole.getRoleDepartment())
       // addDept(newRole.getRoleDepartment())
-      buildMainMenu()
+     
     });
 };
 
