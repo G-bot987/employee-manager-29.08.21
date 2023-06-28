@@ -1,147 +1,121 @@
 const inquirer = require('inquirer');
-// // this package can't be found
-const cTable = require('console.table');
-// const fs = require('fs');
-
-// const sequelize = require('./config/connection');
-
-// Import and require mysql2
 const mysql = require('mysql2');
 const { Department } = require('./lib/department');
 const { Role } = require('./lib/role');
 const { Employee } = require('./lib/employee');
 const config = require('./config');
-// Connect to database
-const db = mysql.createConnection(
-  {
-    host: config.host,
-    // MySQL username,
-    user: config.user,
-    // MySQL password
-    password: config.password,
-    database: config.database,
-  },
 
-);
+// Create a connection to the database
+const db = mysql.createConnection({
+  host: config.host,
+  port: config.port,
+  user: config.user,
+  password: config.password,
+  database: config.database,
+});
 
-const getDept = () => {
+// Function to retrieve all departments
+const getDepartments = () => {
   db.query(`SELECT * FROM department`, function (err, results) {
     if (err) {
-      console.log(err);
+      console.error(err);
+      throw err; // or handle the error in an appropriate way
     }
     console.table(results);
-    buildMainMenu()
+    buildMainMenu();
+  });
 
-  })
-}
+};
 
-
+// Function to retrieve all roles
 const getAllRoles = () => {
   db.query(`SELECT * FROM employee_role`, function (err, results) {
     if (err) {
-      console.log(err);
-      buildMainMenu()
+      console.error(err);
     }
     console.table(results);
-    buildMainMenu()
+    buildMainMenu();
+  });
+};
 
-  })
-}
-
-// employees
+// Function to retrieve all employees
 const getAllEmployees = () => {
   db.query(`SELECT employee.id as employee_id, employee.first_name as employee_first_name, employee.last_name as employee_last_name, employee_role.title as job_title FROM employee JOIN employee_role ON employee.role_id = employee_role.id`, function (err, results) {
     if (err) {
-      console.log(err);
+      console.error(err);
     }
     console.table(results);
-    buildMainMenu()
+    buildMainMenu();
+  });
+};
 
-  })
-}
-
+// Function to add an employee
 function addEmployee(firstName, lastName, role, manager) {
-  db.query(`insert into employee(first_name, last_name, role_id, manager_id) values (?, ?, ?, ?)`, [firstName, lastName, role, manager], function (err, results) {
+  db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`, [firstName, lastName, role, manager], function (err, results) {
     if (err) {
-      console.log(err);
+      console.error(err);
     }
     console.table(results);
     buildMainMenu();
-
-  })
+  });
 }
 
+// Function to add a department
 function addDept(department) {
-  db.query(`insert into department(dept_name) values (?)`, [department], function (err, results) {
+  db.query(`INSERT INTO department (dept_name) VALUES (?)`, [department], function (err, results) {
     if (err) {
-      console.log(err);
+      console.error(err);
     }
     console.table(results);
     buildMainMenu();
-
-  })
+  });
 }
 
+// Function to add a role
 function addRole(role, salary, deptid) {
-  db.query(`insert into employee_role(title, salary, dept_id) values (?, ?, ?)`, [role, salary, deptid], function (err, results) {
+  db.query(`INSERT INTO employee_role (title, salary, dept_id) VALUES (?, ?, ?)`, [role, salary, deptid], function (err, results) {
     if (err) {
-      console.log(err);
+      console.error(err);
     }
     console.table(results);
     buildMainMenu();
-
-  })
+  });
 }
 
-function updateThisEmployeeRole(id,role) {
-  
-
-  db.query(`UPDATE employee SET role_id='${role}' WHERE id='${id}'`,  function (err, results) {
+// Function to update an employee's role
+function updateEmployeeRole(id, role) {
+  db.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [role, id], function (err, results) {
     if (err) {
-      console.log(err);
+      console.error(err);
     }
     console.table(results);
     buildMainMenu();
-
-  })
-
-
-  }
-
-
-
-
-
-
+  });
+}
 
 const optionsEnums = {
-
   viewAllDept: 'viewAllDept',
   viewAllRoles: 'viewAllRoles',
   viewAllEmployees: 'viewAllEmployees',
   addDept: 'addDept',
   addRole: 'addRole',
-  addAemployee: 'addAemployee',
+  addEmployee: 'addEmployee',
   updateEmployeeRole: 'updateEmployeeRole',
-
-
 };
-
-const team = [];
 
 const buildMainMenu = () => {
   inquirer
     .prompt([
       {
         type: 'list',
-        message: 'what would you like to do',
+        message: 'What would you like to do?',
         name: 'option',
         choices: [
           {
             name: optionsEnums.viewAllDept,
           },
           {
-            name: optionsEnums.viewAllRoles,
+            name: optionsEnums.viewAllRoles
           },
           {
             name: optionsEnums.viewAllEmployees,
@@ -153,19 +127,18 @@ const buildMainMenu = () => {
             name: optionsEnums.addDept,
           },
           {
-            name: optionsEnums.addAemployee,
+            name: optionsEnums.addEmployee,
           },
           {
             name: optionsEnums.updateEmployeeRole,
           },
-
         ],
       },
-    ]).then(values => {
+    ])
+    .then((values) => {
       switch (values.option) {
         case optionsEnums.viewAllDept: {
-          // viewDepts();
-          getDept();
+          getDepartments();
           break;
         }
         case optionsEnums.viewAllRoles: {
@@ -184,7 +157,7 @@ const buildMainMenu = () => {
           addDeptOption();
           break;
         }
-        case optionsEnums.addAemployee: {
+        case optionsEnums.addEmployee: {
           addEmployeeOption();
           break;
         }
@@ -200,152 +173,131 @@ buildMainMenu();
 
 const addEmployeeOption = () => {
   inquirer
-    .prompt([{
-      type: 'input',
-      message: 'please enter the employees first name?',
-      name: 'firstname',
-    },
-    {
-      type: 'input',
-      message: 'please enter the employees surname',
-      name: 'surname',
-    },
-    {
-      type: 'input',
-      message: 'whats the employees role',
-      name: 'role',
-    },
-    {
-      type: 'input',
-      message: 'what is the employees manager id',
-      name: 'manager',
-    },
-    ]).then(values => {
-      const newEmployee = new Employee(values.firstname, values.surname, values.role, values.manager)
+    .prompt([
+      {
+        type: 'input',
+        message: 'Please enter the employee\'s first name:',
+        name: 'firstname',
+      },
+      {
+        type: 'input',
+        message: 'Please enter the employee\'s last name:',
+        name: 'surname',
+      },
+      {
+        type: 'input',
+        message: 'Please enter the employee\'s role:',
+        name: 'role',
+      },
+      {
+        type: 'input',
+        message: 'Please enter the employee\'s manager ID:',
+        name: 'manager',
+      },
+    ])
+    .then((values) => {
+      const newEmployee = new Employee(
+        values.firstname,
+        values.surname,
+        values.role,
+        values.manager
+      );
 
-      addEmployee(newEmployee.getName(), newEmployee.getSurname(), newEmployee.getRole(), newEmployee.getManager())
+      addEmployee(
+        newEmployee.getName(),
+        newEmployee.getSurname(),
+        newEmployee.getRole(),
+        newEmployee.getManager()
+      );
     });
 };
-
 
 const addDeptOption = () => {
   inquirer
-    .prompt([{
-      type: 'input',
-      message: 'whats the name of the department you wish to add?',
-      name: 'name',
-    },
+    .prompt([
+      {
+        type: 'input',
+        message: 'What\'s the name of the department you wish to add?',
+        name: 'name',
+      },
+    ])
+    .then((values) => {
+      const newDept = new Department(values.name);
 
-    ]).then(values => {
-      const newDept = new Department(values.name)
-
-
-      console.log(newDept.getDeptName())
-
-
-      console.log(newDept)
-      addDept(newDept.getDeptName())
+      addDept(newDept.getDeptName());
     });
 };
 
-
 const addRoleOption = () => {
   inquirer
-    .prompt([{
-      type: 'input',
-      message: 'whats the name of the role you wish to add?',
-      name: 'name',
-    },
-    {
-      type: 'input',
-      message: 'whats the salary of the role you wish to add? (e.g 2)',
-      name: 'salary',
-    },
-    {
-      type: 'input',
-      message: 'whats the department id this role belongs to? must be a number',
-      name: 'dept',
-    },
+    .prompt([
+      {
+        type: 'input',
+        message: 'What\'s the name of the role you wish to add?',
+        name: 'name',
+      },
+      {
+        type: 'input',
+        message: 'What\'s the salary of the role you wish to add? (e.g., 2)',
+        name: 'salary',
+      },
+      {
+        type: 'input',
+        message: 'What\'s the department ID this role belongs to? (must be a number)',
+        name: 'dept',
+      },
+    ])
+    .then((values) => {
+      const newRole = new Role(values.name, values.salary, values.dept);
 
-    ]).then(values => {
-      const newRole = new Role(values.name, values.salary, values.dept)
-
-
-      addRole(newRole.getRoleName(), newRole.getSalary(), newRole.getRoleDepartment())
-      // addDept(newRole.getRoleDepartment())
-     
+      addRole(newRole.getRoleName(), newRole.getSalary(), newRole.getRoleDepartment());
     });
 };
 
 const updateEmployeeRoles = async () => {
-
-  // db.query(`SELECT employee.id as employee_id, employee.first_name as employee_first_name, employee.last_name as employee_last_name, employee_role.title as job_title FROM employee JOIN employee_role ON employee.role_id = employee_role.id`, function (err, results) {
-  //   if (err) {
-  //     console.log(err);
-  //   }
-  //   console.table(results);
-  //   buildMainMenu()
-
-  // })
-
-
-
-
   db.query(`SELECT * FROM employee`, async function (err, employeeResults) {
     db.query(`SELECT * FROM employee_role`, async function (err, roleResults) {
       if (err) {
-        console.log(err);
+        console.error(err);
       }
-      const employeeNames = employeeResults.map(({ last_name, first_name, id }) => {
-        return {
-          name: last_name,
-          value: {
-            last_name,
-            first_name,
-            id,
-          }
-        };
+  
+        const employeeNames = employeeResults.map(({ last_name, first_name, id }) => {
+          return {
+            name: `${last_name}, ${first_name}`,
+            value: {
+              last_name,
+              first_name,
+              id,
+            },
+          };
+        });
+  
+        const employeePosition = roleResults.map(({ title, id }) => {
+          return {
+            name: title,
+            value: {
+              title,
+              id,
+            },
+          };
+        });
+  
+        const values = await inquirer.prompt([
+          {
+            type: 'list',
+            choices: employeeNames,
+            message: 'Choose an employee you would like to update:',
+            name: 'employee',
+          },
+          {
+            type: 'list',
+            choices: employeePosition,
+            name: 'newRole',
+            message: 'What would you like to change the employee\'s role to?',
+          },
+        ]);
+  
+        updateEmployeeRole(values.employee.id, values.newRole.id);
       });
-
-      if (err) {
-        console.log(err);
-      }
-      const employeePosition = roleResults.map(({ title,id }) => {
-        return {
-          name: title,
-          value: {
-            title,
-            id
-          }
-        };
-      });
-
-      const values = await inquirer.prompt([
-        {
-          type: 'list',
-          choices: employeeNames,
-          message: 'Choice a employee you would like to update:',
-          name: 'employee',
-        },
-        {
-          type: 'list',
-          choices: employeePosition,
-          name: 'newRole',
-          message: 'What would you like to change the employees role to?',
-
-
-
-
-        }
-      ]);
-      updateThisEmployeeRole(values.employee.id, values.newRole.id);
-      // console.log(values)
-
-    })
-
-
-  });
-};
-
-
-
+    });
+  };
