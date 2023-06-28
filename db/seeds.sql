@@ -5,9 +5,9 @@ VALUES ("HR"),
         ("finance");
 
 insert into employee_role (title, salary, dept_id)
-VALUES  ("noob IT", "2.50", 1),
+VALUES  ("IT", "2.50", 1),
      ("senior IT", "3.00", 1),
-      ("sales scum", "4.01", 1),
+      ("sales", "4.01", 1),
        ("accounting", "10.00", 1);
 
 -- insert into employee (first_name last_name)
